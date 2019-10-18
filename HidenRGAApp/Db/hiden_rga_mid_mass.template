@@ -1,0 +1,176 @@
+## Database for Hiden RC Interface RGA
+
+## Set up parameters for MID mode
+# Set particular mass 1
+record(longout, "$(Sys)$(Dev)Mass:MID$(Num)-SP")
+{
+	field(DESC, "Set Start Mass")
+	field(LOPR, "$(MinMass)")
+	field(HOPR, "$(MaxMass)")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Set detector type
+record(mbbo, "$(Sys)$(Dev)Type:MID$(Num)Detr-Sel")
+{
+	field(DESC, "Set Detector Type")
+	field(ZRST, "Faraday")
+	field(ONST, "SEM")
+	field(VAL,  "1")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+#  Check autoranging
+record(bo, "$(Sys)$(Dev)P:MID$(Num)AutoRng-Sel")
+{
+	field(DESC, "Set Autoranging")
+	field(ZNAM, "NO")
+	field(ONAM, "YES")
+	field(VAL,  "1")
+	field(FLNK, "$(Sys)$(Dev)DB:MID$(Num)Rng-FOut_")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Download data to controller
+record(fanout, "$(Sys)$(Dev)DB:MID$(Num)Rng-FOut_")
+{
+	field(DESC, "MID$(Num) Range Fanout")
+	field(SDIS, "$(Sys)$(Dev)P:MID$(Num)AutoRng-Sel")
+	field(DISV, "0")
+	field(LNK1, "$(Sys)$(Dev)DB:MID$(Num)F_Rng-Seq_")
+	field(LNK2, "$(Sys)$(Dev)DB:MID$(Num)SEM_Rng-Seq_")
+}
+
+# Set the pressure range limit for autoranging
+record(seq, "$(Sys)$(Dev)DB:MID$(Num)F_Rng-Seq_")
+{
+	field(DESC, "Faraday Range")
+	field(SELM, "All")
+	field(SDIS, "$(Sys)$(Dev)Type:MID$(Num)Detr-Sel")
+	field(DISV, "1")
+	field(DOL1, "$(Sys)$(Dev)P:F_RngMin-RB PP")
+	field(DOL2, "$(Sys)$(Dev)P:F_RngMax-RB PP")
+	field(DOL3, "$(Sys)$(Dev)P:F_RngMax-RB PP")
+	field(LNK1, "$(Sys)$(Dev)P:MID$(Num)Lo-SP PP")
+	field(LNK2, "$(Sys)$(Dev)P:MID$(Num)Hi-SP PP")
+	field(LNK3, "$(Sys)$(Dev)P:MID$(Num)Curt-SP PP")
+}
+
+record(seq, "$(Sys)$(Dev)DB:MID$(Num)SEM_Rng-Seq_")
+{
+	field(DESC, "SEM Range")
+	field(SELM, "All")
+	field(SDIS, "$(Sys)$(Dev)Type:MID$(Num)Detr-Sel")
+	field(DISV, "0")
+	field(DOL1, "$(Sys)$(Dev)P:SEM_RngMin-RB PP")
+	field(DOL2, "$(Sys)$(Dev)P:SEM_RngMax-RB PP")
+	field(DOL3, "$(Sys)$(Dev)P:SEM_RngMax-RB PP")
+	field(LNK1, "$(Sys)$(Dev)P:MID$(Num)Lo-SP PP")
+	field(LNK2, "$(Sys)$(Dev)P:MID$(Num)Hi-SP PP")
+	field(LNK3, "$(Sys)$(Dev)P:MID$(Num)Curt-SP PP")
+}
+# Set the low pressure range limit for autoranging
+record(longout, "$(Sys)$(Dev)P:MID$(Num)Lo-SP")
+{
+	field(DESC, "Set Low Pr")
+	field(LOPR, "-13")
+	field(HOPR, "-10")
+	field(VAL,  "-13")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Set the high pressure limit for autoranging
+record(longout, "$(Sys)$(Dev)P:MID$(Num)Hi-SP")
+{
+	field(DESC, "Set High Pr")
+	field(LOPR, "-10")
+	field(HOPR, "-5")
+	field(VAL,  "-7")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Set the initial range
+record(longout, "$(Sys)$(Dev)P:MID$(Num)Curt-SP")
+{
+	field(DESC, "Set Current")
+	field(LOPR, "-10")
+	field(HOPR, "-5")
+	field(VAL,  "-7")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Parameters set for MID mode download to RGA
+record(bo, "$(Sys)$(Dev)Cmd:MID$(Num)Set-Cmd")
+{
+	field(DESC, "Set MID Para")
+	field(DTYP, "stream")
+	field(OUT,  "@hiden_rga.proto midSet$(Num)($(Sys),$(Dev)) $(PORT)")
+	field(SDIS, "$(Sys)$(Dev)Cmd:MID$(Num)Set-Cmd_")
+	field(DISV, "0")
+        field(ASG,  "VAWRITE")
+}
+
+record(bo, "$(Sys)$(Dev)Cmd:MID$(Num)Set-Cmd_")
+{
+        field(DESC, "Soft MID$(Num) Para")
+        field(ZNAM, "Not Checked")
+	field(ONAM, "Checked")
+}
+
+# Get processed measurement
+record(bi, "$(Sys)$(Dev)DB:MID$(Num)Proc-Sts_")
+{
+        field(DESC, "Mass$(Num) Proc Sts")
+        field(SDIS, "$(Sys)$(Dev)DB:MID-ASub_.$(ValLink)")
+        field(DISV, "0")
+        field(ZNAM, "NO")
+        field(ONAM, "YES")
+}
+
+# Get measurement value for each mass
+record(ai, "$(Sys)$(Dev)DB:MID$(Num)P-I_")
+{
+	field(DESC, "Mass$(Num) Val")
+	field(PREC, "2")
+	field(SDIS, "$(Sys)$(Dev)DB:MID-ASub_.$(ValLink)")
+        field(DISV, "0")
+	field(FLNK, "$(Sys)$(Dev)P:MID$(Num)-I")
+}
+
+record(ai, "$(Sys)$(Dev)P:MID$(Num)-I")
+{
+        field(DESC,  "Mass$(Num) Meas")
+        field(INP,  "$(Sys)$(Dev)DB:MID$(Num)P-I_")
+	field(PREC, "12")
+}
+
+# Set dwell time
+record(longout, "$(Sys)$(Dev)Time:MID$(Num)Dwell-SP")
+{
+	field(DESC, "Set Mass$(Num) Dwell Time")
+	field(LOPR, "1")
+	field(HOPR, "1000")
+	field(VAL,  "100")
+        field(ASG,  "VAWRITE")
+	field(EGU,  "%")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Set settle time
+record(longout, "$(Sys)$(Dev)Time:MID$(Num)Setl-SP")
+{
+        field(DESC, "Set Mass$(Num) Settle Time")
+        field(LOPR, "1")
+        field(HOPR, "1000")
+        field(VAL,  "100")
+	field(EGU,  "%")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+
